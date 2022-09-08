@@ -3,7 +3,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: "./src/client.js",
+  name: "client", 
   target: "web",
+  mode: "development",
   module: {
     // exclude node_modules
     rules: [
