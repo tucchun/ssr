@@ -2,7 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./src/client.js",
+  entry: "./src/client/index.js",
   name: "client", 
   target: "web",
   mode: "development",
@@ -24,9 +24,9 @@ module.exports = {
     path: path.resolve(__dirname, "build"),
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, "public", "index.html"),
-    }),
+    // new HtmlWebpackPlugin({
+    //   template: path.join(__dirname, "public", "index.html"),
+    // }),
   ],
   // devServer: {
   //   static: {

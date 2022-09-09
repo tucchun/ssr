@@ -1,61 +1,79 @@
 const webpack = require("webpack");
+var path = require("path");
 const webpackDevServer = require("webpack-dev-server");
-const nodemon = require('nodemon')
-const webpackConfigClient = require("./webpack.config.client");
-
+const nodemon = require("nodemon");
+const memfs = require("memfs");
+const { patchRequire } = require("fs-monkey");
 const { logMessage, compilerPromise } = require("./utils");
 
 const clientConfig = require("./webpack.config.client");
 const serverConfig = require("./webpack.config.server");
 
 async function start() {
-  // const multiCompiler = webpack([clientConfig, serverConfig]);
+  const multiCompiler = webpack([clientConfig, serverConfig]);
 
-  // const clientCompiler = multiCompiler.compilers.find(
-  //   (compiler) => compiler.name === "client"
+  const clientCompiler = multiCompiler.compilers.find(
+    (compiler) => compiler.name === "client"
+  );
+  const serverCompiler = multiCompiler.compilers.find(
+    (compiler) => compiler.name === "server"
+  );
+  const devServer = new webpackDevServer(
+    {
+      port: 9000,
+    },
+    clientCompiler
+  );
+
+  await devServer.start();
+  console.log(clientCompiler.outputFileSystem);
+  // serverCompiler.outputFileSystem = memfs.createFsFromVolume(
+  //   new memfs.Volume()
   // );
-  // const serverCompiler = multiCompiler.compilers.find(
-  //   (compiler) => compiler.name === "server"
-  // );
+  const fs = (serverCompiler.outputFileSystem =
+    clientCompiler.outputFileSystem);
+  // const clientCompiler = webpack(clientConfig)
 
-  const clientCompiler = webpack(clientConfig)
+  serverCompiler.watch({}, (error, stats) => {
+    if (!error && !stats.hasErrors()) {
+      console.log(stats.toString(serverConfig.stats));
+      return;
+    }
 
-  // serverCompiler.watch({}, (error, stats) => {
-  //   if (!error && !stats.hasErrors()) {
-  //     console.log(stats.toString(serverConfig.stats));
-  //     return;
-  //   }
+    if (error) {
+      logMessage(error, "error");
+    }
 
-  //   if (error) {
-  //     logMessage(error, "error");
-  //   }
-
-  //   if (stats.hasErrors()) {
-  //     const info = stats.toJson();
-  //     const message = info.errors[0].message;
-  //     logMessage(message);
-  //   }
-  // });
+    if (stats.hasErrors()) {
+      const info = stats.toJson();
+      const message = info.errors[0].message;
+      logMessage(message);
+    }
+  });
 
   // new webpackDevServer(clientCompiler, {
   //   port: 9000,
   // });
 
   // const clientPromise = compilerPromise("client", clientCompiler);
-  // const serverPromise = compilerPromise("server", serverCompiler);
+  const serverPromise = compilerPromise("server", serverCompiler);
 
   // wait until client and server is compiled
   try {
-    // await serverPromise;
+    await serverPromise;
     // await clientPromise;
-    const devServer = new webpackDevServer({
-      port: 9000,
-    }, clientCompiler);
-    devServer.start();
+
+    console.log(clientCompiler.outputFileSystem);
+    console.log(serverCompiler.outputFileSystem);
   } catch (error) {
     logMessage(error, "error");
   }
-
+  const contents = fs.readFileSync(
+    path.resolve(serverConfig.output.path, serverConfig.output.filename)
+  );
+  console.log(contents);
+  patchRequire(fs);
+  // console.log(file);
   // const script = nodemon({
   //   script: `./server.js`,
   //   ignore: [

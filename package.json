@@ -29,7 +29,9 @@
   "dependencies": {
     "chalk": "^5.0.1",
     "express": "^4.18.1",
+    "fs-monkey": "^1.0.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "require-from-string": "^2.0.2"
   }
 }

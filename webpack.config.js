@@ -2,7 +2,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
-  entry: "./src/client.js",
+  entry: "./src/client/index.js",
   module: {
     // exclude node_modules
     rules: [
